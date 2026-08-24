@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>EduBridge</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>:root{--accent:#5B4DFF;--card:#FFF;--text:#111827;--muted:#6B7280;--radius:20px;}*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:linear-gradient(135deg,#5B4DFF 0%,#7C3AED 100%);display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;}
+.container{width:100%;max-width:420px;background:var(--card);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;}
+.header{padding:40px 30px 20px;text-align:center;position:relative;}.header h1{font-family:'Pacifico',cursive;color:var(--accent);font-size:2.2rem;margin-bottom:8px;}.header p{color:var(--muted);font-size:.9rem;}
+.admin-btn{position:absolute;top:15px;right:15px;background:#F3F4F6;border:none;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;color:var(--accent);}
+.tabs{display:flex;background:#F3F4F6;margin:0 20px;border-radius:14px;padding:4px;}.tab{flex:1;padding:12px;text-align:center;border:none;background:transparent;border-radius:10px;font-weight:700;cursor:pointer;color:var(--muted);}.tab.active{background:white;color:var(--accent);box-shadow:0 4px 12px rgba(91,77,255,.15);}
+.form-container{padding:20px 30px 30px;}.form{display:none;}.form.active{display:block;}.input-group{margin-bottom:14px;}.input-group label{display:block;margin-bottom:6px;font-weight:600;font-size:.85rem;color:var(--text);}.input-group input,.input-group select{width:100%;padding:14px;border:2px solid #E5E7EB;border-radius:12px;font-size:.95rem;}.input-group input:focus{outline:none;border-color:var(--accent);}
+.btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--accent),#4338CA);color:white;margin-top:8px;}.btn:disabled{opacity:.6;}.btn-outline{background:#F3F4F6;color:var(--text);margin-top:10px;}.btn-wa{background:#25D366;color:white;margin-top:10px;}
+#alertModal,#codeModal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:none;justify-content:center;align-items:center;padding:16px;}.modal-box,.code-box{background:white;border-radius:24px;padding:26px 22px;max-width:380px;width:100%;text-align:center;}.code-input{width:100%;padding:14px;border:2px solid #E5E7EB;border-radius:12px;text-align:center;font-size:1.4rem;letter-spacing:6px;font-weight:800;margin-bottom:12px;}
+.admin-login{display:none;margin-top:16px;padding:16px;background:#F9FAFB;border-radius:12px;border:2px dashed #E2E8F0;}
+  </style>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5B4DFF">
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+   
+</head>
+<body>
+<div class="container">
+  <div class="header"><button class="admin-btn" onclick="toggleAdmin()">Admin</button><h1>EduBridge</h1><p>Cameroon GCE Past Questions</p></div>
+  <div class="tabs"><button class="tab active" id="regTab" onclick="showTab('register')">Register</button><button class="tab" id="logTab" onclick="showTab('login')">Login</button></div>
+  <div class="form-container">
+    <div class="form active" id="register">
+      <div class="input-group"><label>Full Name</label><input type="text" id="name" placeholder="John Doe"></div>
+      <div class="input-group"><label>Phone Number</label><input type="tel" id="phone" placeholder="6XXXXXXXX"></div>
+      <div class="input-group"><label>Class Level</label><select id="class"><option value="">Select Class</option><option value="Form 5">Form 5</option><option value="Lower 6">Lower 6</option><option value="Upper 6">Upper 6</option></select></div>
+      <button class="btn" id="regBtn" onclick="registerUser()">Create Account</button>
+    </div>
+    <div class="form" id="login">
+      <div class="input-group"><label>Phone Number</label><input type="tel" id="loginPhone" placeholder="Enter registered phone"></div>
+      <button class="btn" id="logBtn" onclick="loginUser()">Login</button>
+      <div class="admin-login" id="adminLoginBox"><div class="input-group"><label>Admin Password</label><input type="password" id="adminPass" placeholder="Enter admin password"></div><button class="btn" style="background:linear-gradient(135deg,#DC2626,#991B1B);" onclick="adminLogin()">Login as Admin</button></div>
+    </div>
+  </div>
+</div>
+<div id="alertModal"><div class="modal-box"><h2 id="alertTitle">Notice</h2><p id="alertMessage" style="margin:10px 0;color:#6B7280;"></p><button class="btn" onclick="document.getElementById('alertModal').style.display='none'">Got it</button></div></div>
+<div id="codeModal"><div class="code-box">
+  <div style="font-size:2.5rem;margin-bottom:10px;">🔐</div>
+  <h2>New Device Detected</h2>
+  <p style="margin:10px 0;color:#6B7280;font-size:.85rem;">For security, your account is locked to one device. Code has been sent to Admin.</p>
+  <p style="margin:10px 0;font-size:.9rem;">Phone: <b id="codePhone"></b><br>Contact Admin on WhatsApp: <b>683329891</b><br><span style="font-size:.75rem;color:#9CA3AF;">Valid 10 minutes</span></p>
+  <input type="tel" id="waCodeInput" class="code-input" placeholder="000000" maxlength="6">
+  <button class="btn" id="verifyBtn" onclick="verifyWA()">Verify & Login</button>
+  <button class="btn btn-wa" onclick="requestCodeWA()">📲 Message Admin on WhatsApp</button>
+  <button class="btn btn-outline" onclick="cancelCode()">❌ Cancel</button>
+</div></div>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
+const ADMIN_PASSWORD = "edubridge2026"; 
+const ADMIN_WA="237683329891";
+
+function showAlert(t,m){document.getElementById('alertTitle').innerText=t;document.getElementById('alertMessage').innerText=m;document.getElementById('alertModal').style.display='flex';}
+function showTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.form').forEach(f=>f.classList.remove('active'));document.getElementById(tab).classList.add('active');if(tab=='register')document.getElementById('regTab').classList.add('active');else document.getElementById('logTab').classList.add('active');}
+function toggleAdmin(){const b=document.getElementById('adminLoginBox');b.style.display=b.style.display==='block'?'none':'block';}
+function adminLogin(){if(document.getElementById('adminPass').value===ADMIN_PASSWORD){localStorage.setItem('adminLoggedIn','true');location.href='admin.html';}else showAlert("❌","Wrong password");}
+function getDeviceID(){let s=localStorage.getItem('deviceID');if(s)return s;const nav=navigator,scr=screen;const fp=[nav.userAgent,nav.language,scr.width+'x'+scr.height,scr.colorDepth,new Date().getTimezoneOffset(),nav.platform].join('|');let h=0;for(let i=0;i<fp.length;i++){h=((h<<5)-h)+fp.charCodeAt(i);h=h&h;}const id='dev_'+Math.abs(h).toString(36)+'_'+fp.length;localStorage.setItem('deviceID',id);return id;}
+let pendingPhone=null;
+
+async function registerUser(){
+  const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim(),classLevel=document.getElementById('class').value,deviceID=getDeviceID();
+  if(!name||!phone||!classLevel) return showAlert("⚠️","Fill all fields");
+  const btn=document.getElementById('regBtn');btn.innerText="⏳ Creating...";btn.disabled=true;
+  try{
+    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'register',Name:name,Phone:phone,Class:classLevel,DeviceID:deviceID})});
+    const d=await r.json();
+    if(d.status=='exists'){showAlert("⚠️","Number exists. Login");showTab('login');}
+    else{localStorage.setItem('user',JSON.stringify({name,phone,class:classLevel,deviceID,status:'Not Paid',expiry:''}));location.href='dashboard.html';}
+  }catch(e){showAlert("❌","Connect error "+e.message);}finally{btn.innerText="Create Account";btn.disabled=false;}
+}
+
+async function loginUser(){
+  const phone=document.getElementById('loginPhone').value.trim(),deviceID=getDeviceID();
+  if(!phone) return showAlert("⚠️","Enter phone");
+  const btn=document.getElementById('logBtn');btn.innerText="⏳ Checking...";btn.disabled=true;
+  try{
+    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',Phone:phone,DeviceID:deviceID})});
+    const d=await r.json();
+    if(d.status==='need_code'){
+      pendingPhone=phone;
+      document.getElementById('codePhone').innerText=phone;
+      document.getElementById('codeModal').style.display='flex';
+      return;
+    }
+    if(d.status!=='success') return showAlert("❌ Not Found","Phone not registered. Register first.");
+    localStorage.setItem('user',JSON.stringify({name:d.user.Name,phone:d.user.Phone,class:d.user.Class,deviceID,status:d.user.Status,expiry:d.user.Expiry}));
+    location.href='dashboard.html';
+  }catch(e){showAlert("❌ Server Error","Check deployment. Error: "+e.message);}finally{btn.innerText="Login";btn.disabled=false;}
+}
+
+function cancelCode(){document.getElementById('codeModal').style.display='none';document.getElementById('waCodeInput').value='';pendingPhone=null;}
+function requestCodeWA(){
+  if(!pendingPhone) return;
+  const msg=`Hello Admin, I need verification code for EduBridge. My number is ${pendingPhone}. I tried to login from new device. Please send me code.`;
+  window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+async function verifyWA(){
+  const code=document.getElementById('waCodeInput').value.trim(),deviceID=getDeviceID();
+  if(!code||code.length!==6) return showAlert("⚠️","Enter 6-digit code");
+  const btn=document.getElementById('verifyBtn');btn.innerText="⏳ Verifying...";btn.disabled=true;
+  try{
+    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'verifyCode',Phone:pendingPhone,Code:code,DeviceID:deviceID})});
+    const d=await r.json();
+    if(d.status==='success'){localStorage.setItem('user',JSON.stringify({name:d.user.Name,phone:d.user.Phone,class:d.user.Class,deviceID,status:d.user.Status,expiry:d.user.Expiry}));document.getElementById('codeModal').style.display='none';location.href='dashboard.html';}
+    else if(d.status==='expired'){showAlert("⏳ Expired","Code expired. Login again to generate new code");cancelCode();}
+    else if(d.status==='wrong_code'){showAlert("❌ Wrong Code","Wrong code. Contact Admin 683329891 on WhatsApp");}
+    else showAlert("❌ Error","Failed");
+  }catch(e){showAlert("❌","Network error");}finally{btn.innerText="Verify & Login";btn.disabled=false;}
+}
+</script></body></html>

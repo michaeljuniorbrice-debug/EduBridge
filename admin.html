@@ -1,0 +1,101 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>EduBridge Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>:root{--bg:#F8FAFC;--card:#FFF;--text:#1E293B;--muted:#64748B;--accent:#5B4DFF;--success:#10B981;--danger:#EF4444;--warning:#F59E0B;--radius:14px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',system-ui,sans-serif;}body{background:var(--bg);color:var(--text);font-size:.85rem;min-height:100vh;display:flex;flex-direction:column;}
+.container{max-width:1300px;margin:0 auto;padding:14px;flex:1;width:100%;}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}header h1{font-size:1.3rem;font-weight:800;color:var(--accent);}
+.btn-sheet{background:var(--success);color:#fff;padding:7px 10px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.72rem;}.btn-logout{background:var(--danger);color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:700;cursor:pointer;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px;}.stat-card{background:var(--card);padding:12px;border-radius:var(--radius);box-shadow:0 2px 6px rgba(0,0,0,.04);border-left:4px solid var(--accent);}.stat-card p{font-size:1.3rem;font-weight:800;}.stat-card h3{font-size:.65rem;color:var(--muted);}
+.tabs{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:12px;margin-bottom:12px;}.tab-btn{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-weight:700;color:var(--muted);font-size:.78rem;cursor:pointer;}.tab-btn.active{background:var(--accent);color:#fff;}
+.tab-content{display:none;}.tab-content.active{display:block;}.card{background:var(--card);padding:14px;border-radius:var(--radius);box-shadow:0 2px 6px rgba(0,0,0,.04);margin-bottom:12px;}
+.table-wrapper{overflow-x:auto;border:1px solid #E2E8F0;border-radius:10px;}table{width:100%;border-collapse:collapse;min-width:750px;}th{background:#F1F5F9;padding:9px;font-size:.62rem;color:var(--muted);text-align:left;}td{padding:9px;border-top:1px solid #E2E8F0;font-size:.78rem;}
+.badge{padding:3px 7px;border-radius:20px;font-size:.62rem;font-weight:700;}.badge.pending{background:#FEF3C7;color:#92400E;}.badge.active{background:#D1FAE5;color:#065F46;}.badge.free{background:#DBEAFE;color:#1E40AF;}.badge.locked{background:#FEE2E2;color:#991B1B;}
+.btn{padding:6px 9px;border:none;border-radius:7px;font-weight:700;cursor:pointer;font-size:.7rem;}.btn-approve{background:var(--success);color:#fff;}.btn-delete{background:var(--danger);color:#fff;}.btn-reset{background:var(--warning);color:#fff;}.btn-edit{background:#3B82F6;color:#fff;}.btn-wa{background:#25D366;color:#fff;}
+.btn-primary{background:var(--accent);color:#fff;width:100%;padding:10px;border-radius:10px;border:none;font-weight:700;cursor:pointer;}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:10px;}input,select{width:100%;padding:9px;border:2px solid #E2E8F0;border-radius:8px;font-size:.8rem;}
+#alertModal,#confirmModal,#editModal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;justify-content:center;align-items:center;z-index:9999;padding:14px;}.modal-box{background:#fff;border-radius:18px;padding:20px;max-width:380px;width:100%;text-align:center;}.modal-buttons{display:flex;gap:8px;margin-top:10px;}
+.blink{animation:blink 1s infinite;}@keyframes blink{50%{opacity:.5;}}.code-big{font-size:1.1rem;font-weight:900;letter-spacing:2px;color:#5B4DFF;background:#EEF2FF;padding:5px 10px;border-radius:8px;border:1px dashed #5B4DFF;}
+</style></head><body><div class="container">
+<header><h1>📊 EduBridge Admin</h1><div><a href="https://docs.google.com/spreadsheets/d/13Gf68tCV8_Q835iWhVjn1TNONSepuFvXt_ymQRERVp4/edit" target="_blank" class="btn-sheet">📄 Sheet</a> <button class="btn-logout" onclick="localStorage.clear();location.href='index.html'">Logout</button></div></header>
+<div class="stats-grid"><div class="stat-card"><h3>TOTAL USERS</h3><p id="totalUsers">0</p></div><div class="stat-card" style="border-color:var(--warning)"><h3>PENDING</h3><p id="pendingCount">0</p></div><div class="stat-card" style="border-color:var(--success)"><h3>ACTIVE</h3><p id="activeCount">0</p></div><div class="stat-card"><h3>PDFs</h3><p id="pdfCount">0</p></div><div class="stat-card"><h3>VIDEOs</h3><p id="videoCount">0</p></div><div class="stat-card" style="border-color:var(--success)"><h3>REVENUE (Active×500)</h3><p id="revenue">0 FCFA</p></div></div>
+<div class="tabs"><button class="tab-btn active" onclick="showTab('pending',this)">⏳ Pending</button><button class="tab-btn" onclick="showTab('active',this)">✅ Active + Codes <span id="codeBadge" style="display:none;background:red;color:white;padding:2px 6px;border-radius:10px;font-size:.6rem;margin-left:4px;" class="blink">NEW CODE!</span></button><button class="tab-btn" onclick="showTab('content',this)">📚 Content</button></div>
+<div class="tab-content active" id="pending"><div class="card"><h2>Pending Approval</h2><br><div class="table-wrapper"><table id="pendingTable"><thead><tr><th>Name</th><th>Phone</th><th>Class</th><th>Amount</th><th>TxID</th><th>Action</th></tr></thead><tbody></tbody></table></div></div></div>
+<div class="tab-content" id="active"><div class="card" id="pendingCodesCard" style="display:none;border:2px solid #5B4DFF;background:#EEF2FF;"><h2 style="color:#5B4DFF;">🔐 PENDING CODES - Click to Send</h2><br><div id="pendingCodesList"></div></div>
+<div class="card"><h2>Active Users - WhatsApp Codes</h2><br><div class="table-wrapper"><table id="activeTable"><thead><tr><th>Name</th><th>Phone</th><th>Class</th><th>Expiry</th><th>Code</th><th>Action</th></tr></thead><tbody></tbody></table></div></div></div>
+<div class="tab-content" id="content"><div class="card"><h2>Add PDF</h2><br><div class="form-grid"><input id="pdfTitle" placeholder="Title"><select id="pdfClass"><option value="">Class</option><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select><select id="pdfSubject"><option value="">Subject</option><option>Biology</option><option>Chemistry</option><option>Physics</option><option>Mathematics</option><option>English</option></select><input id="pdfLink" placeholder="Drive Link"></div><button class="btn-primary" onclick="addPDF()">+ Add PDF</button></div>
+<div class="card"><h2>Add Video</h2><br><div class="form-grid"><input id="vidTitle" placeholder="Title"><select id="vidClass"><option value="">Class</option><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select><select id="vidSubject"><option value="">Subject</option><option>Biology</option><option>Chemistry</option><option>Physics</option><option>Mathematics</option></select><input id="vidLink" placeholder="Link"></div><button class="btn-primary" onclick="addVideo()">+ Add Video</button></div>
+<div class="card"><h2>All Content - Edit / Delete</h2><br><div class="table-wrapper"><table id="contentTable"><thead><tr><th>Type</th><th>Title</th><th>Class</th><th>Subject</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></div>
+</div>
+<div id="alertModal"><div class="modal-box"><h2 id="alertTitle"></h2><p id="alertMessage"></p><button class="btn-primary" onclick="document.getElementById('alertModal').style.display='none'">OK</button></div></div>
+<div id="confirmModal"><div class="modal-box"><h2 id="confirmTitle"></h2><p id="confirmMessage"></p><div class="modal-buttons"><button class="btn" style="flex:1;background:#F3F4F6" onclick="document.getElementById('confirmModal').style.display='none'">Cancel</button><button class="btn-delete" style="flex:1;padding:10px" id="confirmBtn">Yes</button></div></div></div>
+<div id="editModal"><div class="modal-box" style="text-align:left"><h2>Edit Content</h2><br><input id="editOldTitle" type="hidden"><input id="editTitle" placeholder="Title"><br><br><select id="editClass"><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select><br><br><select id="editSubject"><option>Biology</option><option>Chemistry</option><option>Physics</option><option>Mathematics</option><option>English</option></select><br><br><input id="editLink" placeholder="Link"><input id="editSheet" type="hidden"><div class="modal-buttons"><button class="btn" style="flex:1;background:#F3F4F6" onclick="document.getElementById('editModal').style.display='none'">Cancel</button><button class="btn-primary" style="flex:1" onclick="saveEdit()">Save</button></div></div></div>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
+if(localStorage.getItem('adminLoggedIn')!=='true') location.href='index.html';
+let confirmCallback=null;
+function showAlert(t,m){document.getElementById('alertTitle').innerText=t;document.getElementById('alertMessage').innerText=m;document.getElementById('alertModal').style.display='flex';}
+function showConfirm(t,m,cb){document.getElementById('confirmTitle').innerText=t;document.getElementById('confirmMessage').innerText=m;confirmCallback=cb;document.getElementById('confirmModal').style.display='flex';}
+document.getElementById('confirmBtn').onclick=()=>{if(confirmCallback)confirmCallback();document.getElementById('confirmModal').style.display='none';}
+function showTab(tab,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById(tab).classList.add('active');}
+async function apiGet(s){const r=await fetch(`${API_URL}?sheet=${s}&action=get`);return r.json();}
+async function apiPost(d){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(d)});return r.json();}
+function formatDrive(l){try{if(!l.includes('drive.google.com'))return l;let id='';const m1=l.match(/\/d\/([a-zA-Z0-9_-]+)/);const m2=l.match(/id=([a-zA-Z0-9_-]+)/);if(m1)id=m1[1];else if(m2)id=m2[1];if(id)return `https://drive.google.com/file/d/${id}/preview`;return l;}catch{return l;}}
+async function loadAll(){
+  const users=await apiGet('Users'); const pdfs=await apiGet('PDFs'); const vids=await apiGet('Videos');
+  const pBody=document.querySelector('#pendingTable tbody'); const aBody=document.querySelector('#activeTable tbody'); const cBody=document.querySelector('#contentTable tbody');
+  pBody.innerHTML='';aBody.innerHTML='';cBody.innerHTML=''; let pending=0,active=0;
+  let codesHTML=''; let hasCodes=false;
+
+  users.forEach(u=>{
+    if(u.Status==='Pending'){pending++;pBody.innerHTML+=`<tr><td>${u.Name}</td><td>${u.Phone}</td><td>${u.Class}</td><td>${u.Amount||0}</td><td>${u.TxID||''}</td><td><button class="btn btn-approve" onclick="approveUser('${u.Phone}')">Approve</button> <button class="btn btn-delete" onclick="deleteUser('${u.Phone}')">Del</button></td></tr>`;}
+    if(u.Status==='Active' || u.VerificationCode){
+      if(u.Status==='Active') active++;
+      const exp=u.Expiry?new Date(u.Expiry).toLocaleDateString():'';
+      const codeVal = String(u.VerificationCode||'').trim();
+      const expTime = u.CodeExpiry? new Date(u.CodeExpiry).toLocaleTimeString() : '';
+      const minsLeft = u.CodeExpiry? Math.max(0, Math.round((new Date(u.CodeExpiry)-new Date())/60000)) : 0;
+
+      if(codeVal){
+        hasCodes=true;
+        codesHTML+=`<div style="background:white;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div><b>${u.Name}</b> (${u.Phone})<br>Code: <span class="code-big">${codeVal}</span> <small style="color:${minsLeft<2?'red':'green'}">${minsLeft}min left</small></div>
+          <div><button class="btn btn-wa" onclick="sendWA('${u.Phone}','${codeVal}','${u.Name.replace(/'/g,"")}')">📲 Send ${codeVal} on WhatsApp</button></div></div>`;
+      }
+
+      const codeDisplay = codeVal? `<span class="code-big">${codeVal}</span> <small>${expTime}</small>` : '<span style="color:#999">-</span>';
+      const waBtn = codeVal? `<button class="btn btn-wa" onclick="sendWA('${u.Phone}','${codeVal}','${u.Name.replace(/'/g,"")}')">WhatsApp</button>` : '';
+      if(u.Status==='Active' || codeVal){
+        aBody.innerHTML+=`<tr><td>${u.Name}</td><td>${u.Phone}</td><td>${u.Class}</td><td>${exp}</td><td>${codeDisplay} ${waBtn}</td><td><button class="btn btn-reset" onclick="resetDevice('${u.Phone}')">Reset</button> <button class="btn btn-delete" onclick="deleteUser('${u.Phone}')">Del</button></td></tr>`;
+      }
+    }
+  });
+
+  if(hasCodes){
+    document.getElementById('pendingCodesCard').style.display='block';
+    document.getElementById('pendingCodesList').innerHTML=codesHTML;
+    document.getElementById('codeBadge').style.display='inline-block';
+  } else {
+    document.getElementById('pendingCodesCard').style.display='none';
+    document.getElementById('codeBadge').style.display='none';
+  }
+
+  document.getElementById('totalUsers').innerText=users.length; document.getElementById('pendingCount').innerText=pending; document.getElementById('activeCount').innerText=active;
+  document.getElementById('pdfCount').innerText=pdfs.length; document.getElementById('videoCount').innerText=vids.length;
+  document.getElementById('revenue').innerText=(active*500).toLocaleString()+' FCFA';
+  pdfs.forEach(p=>{cBody.innerHTML+=`<tr><td><span class="badge free">PDF</span></td><td>${p.Title}</td><td>${p.Class}</td><td>${p.Subject}</td><td><button class="btn btn-edit" onclick="openEdit('PDFs','${p.Title.replace(/'/g,"\\'")}','${p.Class}','${p.Subject}','${p.Link}')">Edit</button> <button class="btn btn-delete" onclick="deleteContent('PDFs','${p.Title.replace(/'/g,"\\'")}')">Del</button></td></tr>`;});
+  vids.forEach(v=>{cBody.innerHTML+=`<tr><td><span class="badge active">VIDEO</span></td><td>${v.Title}</td><td>${v.Class}</td><td>${v.Subject}</td><td><button class="btn btn-edit" onclick="openEdit('Videos','${v.Title.replace(/'/g,"\\'")}','${v.Class}','${v.Subject}','${v.Link}')">Edit</button> <button class="btn btn-delete" onclick="deleteContent('Videos','${v.Title.replace(/'/g,"\\'")}')">Del</button></td></tr>`;});
+}
+function sendWA(phone,code,name){
+  let p = String(phone).replace(/\D/g,"");
+  if(p.length==9) p="237"+p;
+  const msg=`Hello ${name} 👋\n\nYour EduBridge login code is:\n\n*${code}*\n\nValid for 10 minutes. Don't share this code.\n\nEduBridge - Buea`;
+  window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+async function approveUser(phone){showConfirm('Approve','Activate '+phone+' for 30 days?',async()=>{await apiPost({action:'approve',Phone:phone});showAlert('Approved','User active');loadAll();});}
+async function resetDevice(phone){showConfirm('Reset','Clear device for '+phone+'?',async()=>{await apiPost({action:'resetDevice',Phone:phone});showAlert('Reset','Device cleared');loadAll();});}
+async function deleteUser(phone){showConfirm('Delete','Delete '+phone+'?',async()=>{await apiPost({action:'deleteUser',Phone:phone});showAlert('Deleted','User deleted');loadAll();});}
+async function addPDF(){const t=document.getElementById('pdfTitle').value.trim();let l=formatDrive(document.getElementById('pdfLink').value.trim());const c=document.getElementById('pdfClass').value;const s=document.getElementById('pdfSubject').value;if(!t||!l||!c||!s)return showAlert('Missing','Fill all');await apiPost({action:'addContent',sheet:'PDFs',Title:t,Class:c,Subject:s,Link:l});showAlert('Added','PDF added');loadAll();}
+async function addVideo(){const t=document.getElementById('vidTitle').value.trim();let l=formatDrive(document.getElementById('vidLink').value.trim());const c=document.getElementById('vidClass').value;const s=document.getElementById('vidSubject').value;if(!t||!l||!c||!s)return showAlert('Missing','Fill all');await apiPost({action:'addContent',sheet:'Videos',Title:t,Class:c,Subject:s,Link:l});showAlert('Added','Video added');loadAll();}
+function openEdit(sheet,title,cls,subj,link){document.getElementById('editOldTitle').value=title;document.getElementById('editTitle').value=title;document.getElementById('editClass').value=cls;document.getElementById('editSubject').value=subj;document.getElementById('editLink').value=link;document.getElementById('editSheet').value=sheet;document.getElementById('editModal').style.display='flex';}
+async function saveEdit(){const oldTitle=document.getElementById('editOldTitle').value;const t=document.getElementById('editTitle').value;const c=document.getElementById('editClass').value;const s=document.getElementById('editSubject').value;let l=formatDrive(document.getElementById('editLink').value);const sh=document.getElementById('editSheet').value;await apiPost({action:'editContent',sheet:sh,oldTitle:oldTitle,Title:t,Class:c,Subject:s,Link:l});document.getElementById('editModal').style.display='none';showAlert('Updated','Updated');loadAll();}
+async function deleteContent(sheet,title){showConfirm('Delete','Delete "'+title+'"?',async()=>{await apiPost({action:'deleteContent',sheet:sheet,Title:title});showAlert('Deleted','Deleted');loadAll();});}
+loadAll(); setInterval(loadAll,10000);
+</script></body></html>

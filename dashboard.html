@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduBridge - Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="https://script.google.com">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<meta http-equiv="Cache-Control" content="max-age=86400">
+<style>
+  :root{--bg:#F5F7FA;--card:#FFF;--text:#111827;--muted:#6B7280;--accent:#5B4DFF;--success:#10B981;--danger:#DC2626;--warning:#F59E0B;--radius:20px;--shadow:0 4px 20px rgba(91,77,255,.08);}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',system-ui,sans-serif;}
+  html,body{width:100%;overflow-x:hidden;}
+  body{background:var(--bg);color:var(--text);padding-bottom:90px;}
+  body.no-scroll{overflow:hidden;}
+ .container{max-width:650px;margin:0 auto;width:100%;padding:0 16px;}
+  header{padding:12px 16px;background:var(--card);display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;margin:0 -16px;}
+ .btn-subscribe{background:linear-gradient(135deg,var(--warning),#D97706);color:white;border:none;padding:10px 14px;border-radius:12px;font-weight:800;font-size:.8rem;cursor:pointer;}
+ .btn-welcome{background:linear-gradient(135deg,var(--success),#059669);color:white;border:none;padding:10px 14px;border-radius:12px;font-weight:800;font-size:.85rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+ .btn-logout{background:linear-gradient(135deg,var(--danger),#B91C1C);color:white;border:none;padding:10px 14px;border-radius:12px;font-weight:800;font-size:.9rem;cursor:pointer;}
+ .status-badge{background:linear-gradient(135deg,var(--accent),#4338CA);color:white;padding:14px;border-radius:14px;margin:16px 0;text-align:center;font-weight:700;font-size:.9rem;}
+ .status-badge.trial{background:linear-gradient(135deg,var(--warning),#D97706);}
+ .status-badge.pending{background:linear-gradient(135deg,#F59E0B,#D97706);}
+ .status-badge.expired{background:linear-gradient(135deg,var(--danger),#991B1B);}
+ .hero{background:linear-gradient(135deg,#5B4DFF 0%,#7C3AED 100%);color:white;margin:20px 0 24px;padding:32px 20px;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow);}
+ .hero h1{font-size:1.7rem;margin-bottom:8px;font-weight:800;}
+ .hero p{opacity:.95;margin-bottom:16px;font-size:.95rem;}
+ .btn{background:white;color:var(--accent);border:none;padding:14px 26px;border-radius:14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block;}
+ .content-section{padding:0 0 24px;}
+ .content-section h2{text-align:center;margin-bottom:16px;font-size:1.3rem;font-weight:800;}
+ .link-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+ .link-btn{background:var(--card);padding:24px 12px;border-radius:20px;text-align:center;color:var(--text);font-weight:800;font-size:.95rem;box-shadow:var(--shadow);cursor:pointer;text-decoration:none;display:block;}
+ .link-btn span{font-size:2.4rem;display:block;margin-bottom:8px;}
+ .link-btn.locked{opacity:.5;}
+ .offer-section{background:var(--card);padding:22px 18px;border-radius:var(--radius);margin:20px 0;box-shadow:var(--shadow);}
+ .offer-section h3{font-size:1.2rem;font-weight:800;margin-bottom:10px;color:var(--accent);}
+ .offer-list{list-style:none;margin-top:10px;}
+ .offer-list li{padding:6px 0;display:flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;}
+ .offer-list li::before{content:'✅';}
+ .main-footer{background:linear-gradient(135deg,#5B4DFF 0%,#4338CA 100%);color:white;padding:32px 16px 18px;margin:26px -16px 0;border-radius:var(--radius) var(--radius) 0 0;}
+ .footer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:18px;}
+ .footer-col h4{font-size:.95rem;font-weight:800;margin-bottom:10px;color:#E0E7FF;}
+ .footer-col a{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:5px 0;font-weight:600;font-size:.85rem;}
+ .stats-row{display:flex;justify-content:space-around;text-align:center;padding:16px 0;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2);margin:16px 0;}
+ .stat-num{font-size:1.3rem;font-weight:800;display:block;}
+ .stat-label{font-size:.7rem;opacity:.8;}
+ .footer-bottom{text-align:center;font-size:.75rem;opacity:.7;margin-top:12px;}
+ .bottom-nav{position:fixed;bottom:0;left:0;right:0;width:100%;background:var(--card);display:flex;justify-content:space-around;padding:10px 0;box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:999;border-top:1px solid #F3F4F6;max-width:650px;margin:0 auto;}
+ .bottom-nav a{color:var(--muted);text-decoration:none;font-size:.7rem;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;flex:1;}
+ .bottom-nav a.active{color:var(--accent);}
+  #paywallModal,#logoutModal,#alertModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:99999;display:none;justify-content:center;align-items:center;padding:16px;}
+ .modal-box{background:white;border-radius:24px;padding:26px 22px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;}
+ .modal-icon{font-size:3rem;margin-bottom:12px;}
+ .modal-box h2{margin-bottom:8px;font-size:1.4rem;font-weight:800;}
+ .modal-box p{color:var(--muted);margin-bottom:14px;line-height:1.5;font-size:.85rem;}
+ .modal-box input,.modal-box select{width:100%;padding:13px;border:2px solid #E5E7EB;border-radius:12px;margin-bottom:10px;font-weight:600;}
+ .payment-btn{display:block;background:linear-gradient(135deg,var(--success),#059669);color:white;padding:15px;border-radius:14px;text-decoration:none;font-weight:800;margin:14px 0;}
+ .modal-buttons{display:flex;gap:10px}
+ .btn-danger{flex:1;background:linear-gradient(135deg,var(--danger),#B91C1C);color:white;border:none;padding:14px;border-radius:14px;font-weight:800;cursor:pointer;}
+ .btn-cancel{flex:1;background:#F3F4F6;color:var(--text);border:none;padding:14px;border-radius:14px;font-weight:800;cursor:pointer;}
+ .btn-primary{flex:1;background:linear-gradient(135deg,var(--accent),#4338CA);color:white;border:none;padding:14px;border-radius:14px;font-weight:800;cursor:pointer;}
+ .step{display:none;}
+ .step.active{display:block;}
+ .step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+ .step-dot{width:10px;height:10px;border-radius:50%;background:#E5E7EB;}
+ .step-dot.active{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <button onclick="showPaywall()" class="btn-subscribe" id="subscribeBtn">💳 Subscribe</button>
+  <button class="btn-welcome" id="welcomeBtn">Hi Guest</button>
+  <button onclick="showLogoutConfirm()" class="btn-logout">🚪</button>
+</header>
+<div id="statusBox" class="status-badge trial">⚠️ Trial Mode: Subscribe to unlock</div>
+<section class="hero">
+  <h1>Your Learning Dashboard</h1>
+  <p>Access 1000+ Videos & PDFs. Learn Smart. Pass Exams.</p>
+  <a href="#" onclick="checkAccess('video.html')" class="btn">Start Learning ▶️</a>
+</section>
+<div class="content-section">
+  <h2>What do you want to learn today?</h2>
+  <div class="link-grid">
+    <a href="#" onclick="checkAccess('video.html')" class="link-btn" id="videoBtn"><span>▶️</span><div>Watch Videos</div></a>
+    <a href="#" onclick="checkAccess('pdf.html')" class="link-btn" id="pdfBtn"><span>📄</span><div>Download PDFs</div></a>
+  </div>
+</div>
+<div class="offer-section">
+  <h3>🌟 Why Choose EduBridge?</h3>
+  <p style="color:var(--muted);margin-bottom:10px;font-size:.9rem">We are the #1 platform for Cameroon GCE students.</p>
+  <ul class="offer-list">
+    <li>1000+ Past Questions with Solutions</li>
+    <li>Expert Video Lessons for Form 5 to Upper 6</li>
+    <li>Downloadable PDFs for Offline Study</li>
+    <li>New Content Added Every Week</li>
+    <li>Affordable: Only 500 FCFA per month</li>
+  </ul>
+</div>
+<footer class="main-footer">
+  <div class="footer-grid">
+    <div class="footer-col"><h4>📚 Learn</h4><a href="#" onclick="checkAccess('video.html')">Videos</a><a href="#" onclick="checkAccess('pdf.html')">PDFs</a><a href="about.html">About Us</a></div>
+    <div class="footer-col"><h4>🤝 Support</h4><a href="https://wa.me/237683329891" target="_blank">WhatsApp</a><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+  </div>
+  <div class="stats-row">
+    <div><span class="stat-num">1000+</span><span class="stat-label">Resources</span></div>
+    <div><span class="stat-num">500+</span><span class="stat-label">Students</span></div>
+    <div><span class="stat-num">4</span><span class="stat-label">Subjects</span></div>
+  </div>
+  <div class="footer-bottom">© 2026 EduBridge. Made with ❤️ in Buea.</div>
+</footer>
+</div>
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="active"><div>🏠</div><span>Dashboard</span></a>
+  <a href="#" onclick="checkAccess('pdf.html')"><div>📚</div><span>Docs</span></a>
+  <a href="#" onclick="checkAccess('video.html')"><div>▶️</div><span>Videos</span></a>
+  <a href="about.html"><div>ℹ️</div><span>About</span></a>
+</nav>
+
+<div id="paywallModal">
+  <div class="modal-box">
+    <div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div></div>
+    <div class="step active" id="step1">
+      <div class="modal-icon">💳</div>
+      <h2>Unlock Full Access</h2>
+      <p>Pay <b>500 FCFA+</b> to access all PDFs and Videos for 30+ days</p>
+      <a href="tel:*126*9*683329891*500%23" class="payment-btn">📞 Tap to Pay 500 FCFA</a>
+      <p style="font-size:.75rem;color:var(--muted)">Dial will open. Pay then tap "I've Paid"</p>
+      <div class="modal-buttons"><button class="btn-cancel" onclick="closePaywall()">Cancel</button><button class="btn-primary" onclick="goToStep2()">I've Paid →</button></div>
+    </div>
+    <div class="step" id="step2">
+      <div class="modal-icon">📱</div>
+      <h2>Submit for Approval</h2>
+      <p>Enter your payment details so we can activate you</p>
+      <input id="payName" placeholder="Full Name" readonly>
+      <input id="payPhone" placeholder="Phone Number" readonly>
+      <select id="payClass"><option value="">Select Class</option><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select>
+      <input id="payTxID" placeholder="Transaction ID from MoMo">
+      <input id="payAmount" placeholder="Amount Paid e.g 500" type="number" value="500">
+      <div class="modal-buttons"><button class="btn-cancel" onclick="goToStep1()">← Back</button><button class="btn-primary" onclick="submitPayment()">Submit</button></div>
+    </div>
+  </div>
+</div>
+<div id="alertModal"><div class="modal-box"><div class="modal-icon" id="alertIcon">⚠️</div><h2 id="alertTitle">Notice</h2><p id="alertMessage"></p><button class="btn-danger" onclick="closeAlert()">OK</button></div></div>
+<div id="logoutModal"><div class="modal-box"><div class="modal-icon">🚪</div><h2>Logout?</h2><p>Are you sure?</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutConfirm()">Cancel</button><button class="btn-danger" onclick="confirmLogout()">Yes, Logout</button></div></div></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
+let userStatus='Not Paid';
+function showAlert(title,msg,icon='⚠️'){document.getElementById('alertIcon').innerText=icon;document.getElementById('alertTitle').innerText=title;document.getElementById('alertMessage').innerText=msg;document.getElementById('alertModal').style.display='flex';document.body.classList.add('no-scroll');}
+function closeAlert(){document.getElementById('alertModal').style.display='none';document.body.classList.remove('no-scroll');}
+function showPaywall(){
+  const user=JSON.parse(localStorage.getItem('user')||'null');
+  if(user){document.getElementById('payName').value=user.name;document.getElementById('payPhone').value=user.phone;document.getElementById('payClass').value=user.class;}
+  document.getElementById('paywallModal').style.display='flex';document.body.classList.add('no-scroll');goToStep1();
+}
+function closePaywall(){document.getElementById('paywallModal').style.display='none';document.body.classList.remove('no-scroll');}
+function goToStep1(){document.getElementById('step1').classList.add('active');document.getElementById('step2').classList.remove('active');document.getElementById('dot1').classList.add('active');document.getElementById('dot2').classList.remove('active');}
+function goToStep2(){document.getElementById('step1').classList.remove('active');document.getElementById('step2').classList.add('active');document.getElementById('dot1').classList.remove('active');document.getElementById('dot2').classList.add('active');}
+async function apiGet(sheet){const res=await fetch(`${API_URL}?sheet=${sheet}&action=get`);return res.json();}
+async function apiPost(data){const res=await fetch(API_URL,{method:'POST',body:JSON.stringify(data)});return res.json();}
+function checkAccess(page){
+  const user=JSON.parse(localStorage.getItem('user')||'null');
+  if(!user||userStatus!=='Active'||!user.expiry){showAlert("🔒 Locked","Please subscribe and wait for approval","🔒");return;}
+  const today=new Date();today.setHours(0,0,0,0);
+  const expiry=new Date(user.expiry);expiry.setHours(23,59,59,999);
+  if(expiry<today){showAlert("⏰ Expired","Your plan expired, please renew","⏰");return;}
+  location.href=page;
+}
+function showCachedUserInstant(){
+  const user=JSON.parse(localStorage.getItem('user')||'null');
+  const subscribeBtn=document.getElementById('subscribeBtn');
+  const statusBox=document.getElementById('statusBox');
+  if(!user){statusBox.innerText=`⚠️ Trial Mode: Subscribe to unlock`;statusBox.className='status-badge trial';document.getElementById('welcomeBtn').innerText=`Hi Guest`;userStatus='Not Paid';return;}
+  document.getElementById('welcomeBtn').innerText=`Hi ${user.name?user.name.split(' ')[0]:'User'}`;
+  if(user.status==='Active'&&user.expiry){
+    const today=new Date();today.setHours(0,0,0,0);
+    const expiry=new Date(user.expiry);expiry.setHours(23,59,59,999);
+    const daysLeft=Math.ceil((expiry-today)/(1000*60*60*24));
+    if(daysLeft>0){userStatus='Active';statusBox.innerText=`✅ Active: ${daysLeft} ${daysLeft===1?'day':'days'} left`;statusBox.className='status-badge';subscribeBtn.style.display='none';return;}
+  }
+  if(user.status==='Pending'){userStatus='Pending';statusBox.innerText=`⏳ Pending Approval`;statusBox.className='status-badge pending';subscribeBtn.style.display='none';return;}
+  userStatus='Not Paid';statusBox.innerText=`⚠️ Trial Mode: Subscribe`;statusBox.className='status-badge trial';subscribeBtn.style.display='block';
+}
+window.addEventListener('load',async()=>{showCachedUserInstant();loadUserData();})
+async function loadUserData(){
+  const user=JSON.parse(localStorage.getItem('user')||'null');
+  const subscribeBtn=document.getElementById('subscribeBtn');
+  const statusBox=document.getElementById('statusBox');
+  if(!user) return;
+  try{
+    const users=await apiGet('Users');
+    const sheetUser=users.find(u=>String(u.Phone)===String(user.phone));
+    if(!sheetUser){localStorage.setItem('user',JSON.stringify({...user,status:'Not Paid',expiry:''}));showCachedUserInstant();return;}
+    userStatus=sheetUser.Status;
+    if(sheetUser.Status==='Active'&&sheetUser.Expiry){
+      const today=new Date();today.setHours(0,0,0,0);
+      const expiry=new Date(sheetUser.Expiry);expiry.setHours(23,59,59,999);
+      const daysLeft=Math.ceil((expiry-today)/(1000*60*60*24));
+      if(daysLeft<=0){userStatus='Expired';statusBox.innerText=`⏰ Expired: Please renew`;statusBox.className='status-badge expired';subscribeBtn.style.display='block';subscribeBtn.innerText='💳 Renew Now';localStorage.setItem('user',JSON.stringify({...user,status:'Expired'}));}
+      else{statusBox.innerText=`✅ Active: ${daysLeft} ${daysLeft===1?'day':'days'} left`;statusBox.className='status-badge';subscribeBtn.style.display='none';localStorage.setItem('user',JSON.stringify({...user,status:'Active',expiry:sheetUser.Expiry}));}
+    }else if(sheetUser.Status==='Pending'){userStatus='Pending';statusBox.innerText=`⏳ Pending Approval`;statusBox.className='status-badge pending';subscribeBtn.style.display='none';localStorage.setItem('user',JSON.stringify({...user,status:'Pending'}));}
+    else{userStatus='Not Paid';statusBox.innerText=`⚠️ Trial Mode: Subscribe`;statusBox.className='status-badge trial';subscribeBtn.style.display='block';localStorage.setItem('user',JSON.stringify({...user,status:'Not Paid',expiry:''}));}
+  }catch(e){console.log(e);}
+}
+async function submitPayment(){
+  const user=JSON.parse(localStorage.getItem('user')||'null');
+  if(!user) return showAlert("⚠️ Error","Please login again");
+  const name=document.getElementById('payName').value.trim();
+  const phone=document.getElementById('payPhone').value.trim();
+  const classLevel=document.getElementById('payClass').value;
+  const txid=document.getElementById('payTxID').value.trim();
+  const amount=document.getElementById('payAmount').value;
+  const paidDate=new Date().toISOString().split('T')[0];
+  if(!classLevel||!txid||!amount) return showAlert("⚠️ Missing","Fill Class, TxID and Amount");
+  showAlert("⏳ Submitting...","Please wait","⏳");
+  const data={sheet:'Users',action:'submitPayment',Name:name,Phone:phone,Class:classLevel,DeviceID:user.deviceID,TxID:txid,Amount:amount,PaidDate:paidDate};
+  const res=await apiPost(data);
+  closePaywall();
+  if(res.status==='success'){showAlert("✅ Submitted","We received your payment. Admin will activate.","✅");localStorage.setItem('user',JSON.stringify({...user,status:'Pending'}));showCachedUserInstant();}
+  else showAlert("❌ Failed",res.message||"Failed","❌");
+}
+function showLogoutConfirm(){document.getElementById('logoutModal').style.display='flex';document.body.classList.add('no-scroll');}
+function closeLogoutConfirm(){document.getElementById('logoutModal').style.display='none';document.body.classList.remove('no-scroll');}
+function confirmLogout(){localStorage.clear();location.href='index.html';}
+</script>
+</body></html>
