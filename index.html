@@ -12,15 +12,10 @@ body{background:linear-gradient(135deg,#5B4DFF 0%,#7C3AED 100%);display:flex;jus
 .btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--accent),#4338CA);color:white;margin-top:8px;}.btn:disabled{opacity:.6;}.btn-outline{background:#F3F4F6;color:var(--text);margin-top:10px;}.btn-wa{background:#25D366;color:white;margin-top:10px;}
 #alertModal,#codeModal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:none;justify-content:center;align-items:center;padding:16px;}.modal-box,.code-box{background:white;border-radius:24px;padding:26px 22px;max-width:380px;width:100%;text-align:center;}.code-input{width:100%;padding:14px;border:2px solid #E5E7EB;border-radius:12px;text-align:center;font-size:1.4rem;letter-spacing:6px;font-weight:800;margin-bottom:12px;}
 .admin-login{display:none;margin-top:16px;padding:16px;background:#F9FAFB;border-radius:12px;border:2px dashed #E2E8F0;}
-  </style>
-  <link rel="manifest" href="manifest.json">
+</style>
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#5B4DFF">
-<script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
-   
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
 </head>
 <body>
 <div class="container">
@@ -52,64 +47,89 @@ if('serviceWorker' in navigator){
   <button class="btn btn-outline" onclick="cancelCode()">❌ Cancel</button>
 </div></div>
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
-const ADMIN_PASSWORD = "edubridge2026"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzT2oKDjgZBdTSUuHM8o2dsJ1MsQ6v3tXl45vUabLBfz4HWXnPAw_3kBzSMyCyc4ME3Nw/exec";
+const ADMIN_PASSWORD = "edubridge2026";
 const ADMIN_WA="237683329891";
 
 function showAlert(t,m){document.getElementById('alertTitle').innerText=t;document.getElementById('alertMessage').innerText=m;document.getElementById('alertModal').style.display='flex';}
 function showTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.form').forEach(f=>f.classList.remove('active'));document.getElementById(tab).classList.add('active');if(tab=='register')document.getElementById('regTab').classList.add('active');else document.getElementById('logTab').classList.add('active');}
 function toggleAdmin(){const b=document.getElementById('adminLoginBox');b.style.display=b.style.display==='block'?'none':'block';}
 function adminLogin(){if(document.getElementById('adminPass').value===ADMIN_PASSWORD){localStorage.setItem('adminLoggedIn','true');location.href='admin.html';}else showAlert("❌","Wrong password");}
-function getDeviceID(){let s=localStorage.getItem('deviceID');if(s)return s;const nav=navigator,scr=screen;const fp=[nav.userAgent,nav.language,scr.width+'x'+scr.height,scr.colorDepth,new Date().getTimezoneOffset(),nav.platform].join('|');let h=0;for(let i=0;i<fp.length;i++){h=((h<<5)-h)+fp.charCodeAt(i);h=h&h;}const id='dev_'+Math.abs(h).toString(36)+'_'+fp.length;localStorage.setItem('deviceID',id);return id;}
+
+// ===== FIXED: SAME PHONE, DIFFERENT BROWSERS = SAME ID =====
+function getDeviceID(){
+  let s=localStorage.getItem('deviceID');
+  if(s) return s;
+  // Uses only values that are SAME across browsers on same phone
+  const scr=screen;
+  const lang = (navigator.language || 'en').split('-')[0]; // en, fr
+  const tz = new Date().getTimezoneOffset(); // same for Cameroon = -60
+  // Width x Height + timezone + language + colorDepth = same on Chrome/Firefox/Opera of same phone
+  const fp = scr.width + 'x' + scr.height + '_' + scr.colorDepth + '_' + tz + '_' + lang;
+  let h=0;
+  for(let i=0;i<fp.length;i++){h=((h<<5)-h)+fp.charCodeAt(i);h=h&h;}
+  const id='dev_'+Math.abs(h).toString(36)+'_'+fp.length;
+  localStorage.setItem('deviceID',id);
+  return id;
+}
 let pendingPhone=null;
 
-async function registerUser(){
-  const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim(),classLevel=document.getElementById('class').value,deviceID=getDeviceID();
+function registerUser(){
+  const name=document.getElementById('name').value.trim();
+  const phone=document.getElementById('phone').value.trim();
+  const classLevel=document.getElementById('class').value;
+  const deviceID=getDeviceID();
   if(!name||!phone||!classLevel) return showAlert("⚠️","Fill all fields");
-  const btn=document.getElementById('regBtn');btn.innerText="⏳ Creating...";btn.disabled=true;
-  try{
-    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'register',Name:name,Phone:phone,Class:classLevel,DeviceID:deviceID})});
-    const d=await r.json();
-    if(d.status=='exists'){showAlert("⚠️","Number exists. Login");showTab('login');}
-    else{localStorage.setItem('user',JSON.stringify({name,phone,class:classLevel,deviceID,status:'Not Paid',expiry:''}));location.href='dashboard.html';}
-  }catch(e){showAlert("❌","Connect error "+e.message);}finally{btn.innerText="Create Account";btn.disabled=false;}
+  if(phone.length<9) return showAlert("⚠️","Enter valid 6XXXXXXXX");
+  localStorage.setItem('user',JSON.stringify({name:name, phone:phone, class:classLevel, deviceID:deviceID, status:'Not Paid', expiry:''}));
+  location.href='dashboard.html';
 }
 
 async function loginUser(){
-  const phone=document.getElementById('loginPhone').value.trim(),deviceID=getDeviceID();
+  const phone=document.getElementById('loginPhone').value.trim();
+  const deviceID=getDeviceID();
   if(!phone) return showAlert("⚠️","Enter phone");
   const btn=document.getElementById('logBtn');btn.innerText="⏳ Checking...";btn.disabled=true;
   try{
-    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',Phone:phone,DeviceID:deviceID})});
-    const d=await r.json();
-    if(d.status==='need_code'){
+    const r=await fetch(`${API_URL}?sheet=Users&action=get&t=${Date.now()}`);
+    const text = await r.text();
+    let users;
+    try{ users = JSON.parse(text); }catch(e){
+      showAlert("❌ Deploy Error","Script returned HTML not JSON. Redeploy as Anyone.");
+      return;
+    }
+    if(users.error){ showAlert("❌ Sheet Error", users.error); return; }
+    const u = users.find(x=>String(x.Phone)===String(phone));
+    if(!u){
+      const local=JSON.parse(localStorage.getItem('user')||'null');
+      if(local && String(local.phone)===String(phone)){ location.href='dashboard.html'; return; }
+      showAlert("❌ Not Found","Phone not registered. Register first."); return;
+    }
+    if(u.DeviceID && String(u.DeviceID)!==String(deviceID)){
       pendingPhone=phone;
       document.getElementById('codePhone').innerText=phone;
       document.getElementById('codeModal').style.display='flex';
+      await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',Phone:phone,DeviceID:deviceID})});
       return;
     }
-    if(d.status!=='success') return showAlert("❌ Not Found","Phone not registered. Register first.");
-    localStorage.setItem('user',JSON.stringify({name:d.user.Name,phone:d.user.Phone,class:d.user.Class,deviceID,status:d.user.Status,expiry:d.user.Expiry}));
+    localStorage.setItem('user',JSON.stringify({name:u.Name, phone:u.Phone, class:u.Class, deviceID:deviceID, status:u.Status, expiry:u.Expiry}));
     location.href='dashboard.html';
-  }catch(e){showAlert("❌ Server Error","Check deployment. Error: "+e.message);}finally{btn.innerText="Login";btn.disabled=false;}
+  }catch(e){showAlert("❌ Server Error",e.message);}finally{btn.innerText="Login";btn.disabled=false;}
 }
 
 function cancelCode(){document.getElementById('codeModal').style.display='none';document.getElementById('waCodeInput').value='';pendingPhone=null;}
-function requestCodeWA(){
-  if(!pendingPhone) return;
-  const msg=`Hello Admin, I need verification code for EduBridge. My number is ${pendingPhone}. I tried to login from new device. Please send me code.`;
-  window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`,'_blank');
-}
+function requestCodeWA(){ if(!pendingPhone) return; const msg=`Hello Admin, I need verification code for EduBridge. My number is ${pendingPhone}.`; window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`,'_blank');}
 async function verifyWA(){
   const code=document.getElementById('waCodeInput').value.trim(),deviceID=getDeviceID();
   if(!code||code.length!==6) return showAlert("⚠️","Enter 6-digit code");
   const btn=document.getElementById('verifyBtn');btn.innerText="⏳ Verifying...";btn.disabled=true;
   try{
     const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'verifyCode',Phone:pendingPhone,Code:code,DeviceID:deviceID})});
-    const d=await r.json();
-    if(d.status==='success'){localStorage.setItem('user',JSON.stringify({name:d.user.Name,phone:d.user.Phone,class:d.user.Class,deviceID,status:d.user.Status,expiry:d.user.Expiry}));document.getElementById('codeModal').style.display='none';location.href='dashboard.html';}
-    else if(d.status==='expired'){showAlert("⏳ Expired","Code expired. Login again to generate new code");cancelCode();}
-    else if(d.status==='wrong_code'){showAlert("❌ Wrong Code","Wrong code. Contact Admin 683329891 on WhatsApp");}
+    const text = await r.text();
+    let d; try{ d = JSON.parse(text); }catch{ showAlert("❌ Deploy Error","Script returned HTML. Redeploy as Anyone."); return; }
+    if(d.status==='success'){ const u=d.user; localStorage.setItem('user',JSON.stringify({name:u.Name,phone:u.Phone,class:u.Class,deviceID:deviceID,status:u.Status,expiry:u.Expiry})); document.getElementById('codeModal').style.display='none';location.href='dashboard.html';}
+    else if(d.status==='expired'){showAlert("⏳ Expired","Code expired. Login again");cancelCode();}
+    else if(d.status==='wrong_code'){showAlert("❌ Wrong Code","Wrong code. Contact Admin 683329891");}
     else showAlert("❌ Error","Failed");
   }catch(e){showAlert("❌","Network error");}finally{btn.innerText="Verify & Login";btn.disabled=false;}
 }

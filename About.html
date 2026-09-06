@@ -64,11 +64,11 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin:0 6px;font-weigh
 <a href="dashboard.html"><div>🏠</div><span>Dashboard</span></a>
 <a onclick="handleAccess('pdf.html')"><div>📚</div><span>Docs</span></a>
 <a onclick="handleAccess('video.html')"><div>▶️</div><span>Videos</span></a>
-<a href="about.html" class="active"><div>ℹ️</div><span>About</span></a>
+<a href="About.html" class="active"><div>ℹ️</div><span>About</span></a>
 </nav>
 <div id="alertModal"><div class="modal-box"><div class="modal-icon" id="alertIcon">⚠️</div><h2 id="alertTitle">Notice</h2><p id="alertMessage"></p><button class="btn-danger" onclick="closeAlert()">OK</button></div></div>
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzT2oKDjgZBdTSUuHM8o2dsJ1MsQ6v3tXl45vUabLBfz4HWXnPAw_3kBzSMyCyc4ME3Nw/exec";
 let userStatus='Trial';
 function showAlert(t,m,i='⚠️'){document.getElementById('alertIcon').innerText=i;document.getElementById('alertTitle').innerText=t;document.getElementById('alertMessage').innerText=m;document.getElementById('alertModal').style.display='flex';document.body.classList.add('no-scroll');}
 function closeAlert(){document.getElementById('alertModal').style.display='none';document.body.classList.remove('no-scroll');}
