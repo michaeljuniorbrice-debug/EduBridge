@@ -36,16 +36,22 @@ h2{font-size:1.25rem;font-weight:800;margin:0 0 14px;display:flex;align-items:ce
 .about-box{background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-left:4px solid var(--success);padding:16px;border-radius:14px;margin:18px 0;}
 .about-box h3{color:var(--success);margin-bottom:6px;font-weight:800;font-size:.95rem;}
 .about-box p{color:var(--muted);line-height:1.6;font-size:.82rem;}
+
+/* VIDEO MODAL - FIXED FOR DESKTOP + MOBILE + BEST DISPLAY */
 .video-modal{position:fixed;inset:0;background:#000;z-index:99999;display:none;flex-direction:column;}
 .video-modal.show{display:flex;}
-.video-header{position:absolute;top:0;left:0;right:0;padding:14px 16px;z-index:10000;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent);}
-.video-title{color:#FFF;font-weight:800;font-size:1rem;flex:1;margin-right:10px;}
+.video-header{position:absolute;top:0;left:0;right:0;padding:14px 16px;z-index:10000;display:flex;justify-content:space-between;align-items:center;background:#000;}
+.video-title{color:#FFF;font-weight:800;font-size:1rem;flex:1;margin-right:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .close-btn{background:rgba(255,255,255,.15);border:none;color:white;font-size:1.6rem;width:42px;height:42px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.video-player-full{width:100%;height:100%;background:#000;position:relative;}
-.video-player-wrapper{position:relative;width:100%;height:100%;}
-.video-player-full iframe{width:100%;height:100%;border:none;}
-.video-block-top{position:absolute;top:0;left:0;right:0;height:65px;background:linear-gradient(to bottom,rgba(0,0,0,.85),transparent);z-index:20;}
-.video-watermark{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:white;padding:5px 12px;border-radius:20px;font-size:.7rem;font-weight:700;z-index:21;pointer-events:none;}
+.video-player-full{width:100%;height:100%;background:#000;position:relative;display:flex;align-items:center;justify-content:center;}
+.video-player-wrapper{position:relative;width:100%;height:100%;max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;}
+.video-player-full iframe{width:100%;height:100%;border:none;background:#000;object-fit:contain;}
+/* SOLID BLACK OVERLAY - COVERS DRIVE TOP BAR ON ALL SCREENS */
+.video-block-top{position:absolute;top:0;left:0;right:0;height:90px;background:#000;z-index:30;pointer-events:auto;}
+.video-block-top::after{content:'EduBridge • View Only';position:absolute;bottom:8px;left:16px;color:rgba(255,255,255,.6);font-size:.7rem;font-weight:700;}
+.video-block-right{position:absolute;top:0;right:0;width:130px;height:90px;background:#000;z-index:31;pointer-events:auto;}
+.video-watermark{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:white;padding:6px 14px;border-radius:20px;font-size:.7rem;font-weight:700;z-index:32;pointer-events:none;border:1px solid rgba(255,255,255,.15);}
+
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:10px 0;box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:999;border-top:1px solid #F3F4F6;}
 .bottom-nav a{color:var(--muted);text-decoration:none;font-size:.7rem;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;cursor:pointer;}
 .bottom-nav a.active{color:var(--accent);}
@@ -60,6 +66,9 @@ h2{font-size:1.25rem;font-weight:800;margin:0 0 14px;display:flex;align-items:ce
 .btn{padding:13px;border:none;border-radius:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:white;width:100%;}
 .btn-cancel{background:#F3F4F6;color:var(--text)}
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5B4DFF">
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
 </head>
 <body>
 <div id="mainContent">
@@ -88,72 +97,146 @@ h2{font-size:1.25rem;font-weight:800;margin:0 0 14px;display:flex;align-items:ce
 
 <div class="video-modal" id="videoModal">
 <div class="video-header"><div class="video-title" id="videoTitle"></div><button class="close-btn" onclick="closeVideo()">×</button></div>
-<div class="video-player-full" onclick="toggleUI()"><div class="video-player-wrapper">
-<iframe id="modalVideoPlayer" allowfullscreen allow="autoplay"></iframe>
-<div class="video-block-top" onclick="toggleUI()"></div>
+<div class="video-player-full" onclick="toggleUI()">
+<div class="video-player-wrapper" id="videoWrapper">
+<iframe id="modalVideoPlayer" allowfullscreen allow="autoplay; fullscreen" webkitallowfullscreen mozallowfullscreen></iframe>
+<div class="video-block-top" onclick="event.stopPropagation()"></div>
+<div class="video-block-right" onclick="event.stopPropagation()"></div>
 <div class="video-watermark">EduBridge • No Download • View Only</div>
-</div></div>
+</div>
+</div>
 </div>
 
-<div id="paywallModal"><div class="modal-box"><div class="modal-icon">🔒</div><h2>Subscribe to Unlock</h2><p>This video is for subscribers only. Pay 500 FCFA+ to get 30 days access.</p><a href="tel:*126*9*683329891#" class="payment-btn">📞 Dial *126*9*683329891# to Pay</a><input id="payName" placeholder="Full Name"><input id="payPhone" placeholder="Phone 6XXXXXXXX"><select id="payClass"><option value="">Class</option><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select><input id="payTxID" placeholder="Transaction ID"><input id="payAmount" placeholder="Amount e.g 500" type="number"><div class="modal-buttons"><button class="btn btn-cancel" onclick="closePaywall()">Cancel</button><button class="btn" onclick="submitPayment()">Submit</button></div></div></div>
+<div id="paywallModal"><div class="modal-box"><div class="modal-icon">🔒</div><h2>Subscribe to Unlock</h2><p>This video is for subscribers only. Pay 500 FCFA+ to get 30 days access.</p><a href="tel:*126*9*683329891*500%23" class="payment-btn">📞 Dial *126*9*683329891*500# to Pay</a><input id="payName" placeholder="Full Name"><input id="payPhone" placeholder="Phone 6XXXXXXXX"><select id="payClass"><option value="">Class</option><option>Form 5</option><option>Lower 6</option><option>Upper 6</option></select><input id="payTxID" placeholder="Transaction ID"><input id="payAmount" placeholder="Amount e.g 500" type="number" value="500"><div class="modal-buttons"><button class="btn btn-cancel" onclick="closePaywall()">Cancel</button><button class="btn" onclick="submitPayment()">Submit</button></div></div></div>
 <div id="alertModal"><div class="modal-box"><div class="modal-icon" id="alertIcon">✅</div><h2 id="alertTitle">Success</h2><p id="alertMessage"></p><button class="btn" onclick="closeAlert()">Got it</button></div></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxQuNsnx31k-bijt3XHY0OxLTh0gZP04xf8EvkEdDIl8hR5HnN6kZ-hG8u9rvQyj7_6Vg/exec";
-let selectedLevel=""; let allVideos=[]; let hideUITimeout; let userStatus='Trial';
+const u = JSON.parse(localStorage.getItem('user')||'null');
+if(!u ||!u.phone) location.replace('index.html');
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzT2oKDjgZBdTSUuHM8o2dsJ1MsQ6v3tXl45vUabLBfz4HWXnPAw_3kBzSMyCyc4ME3Nw/exec";
+let selectedLevel=""; let allVideos=[]; let hideUITimeout; let userStatus='Not Paid';
+let cachedUser=null;
+
 function convertDriveLink(url){
  if(!url) return "";
- if(url.includes('youtube.com/watch?v=')){const vid=url.split('v=')[1].split('&')[0];return `https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1`;}
- if(url.includes('youtu.be/')){const vid=url.split('youtu.be/')[1].split('?')[0];return `https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1`;}
- if(url.includes('/preview')) return url;
+ if(url.includes('youtube.com/watch?v=')){const vid=url.split('v=')[1].split('&')[0];return `https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1&playsinline=1`;}
+ if(url.includes('youtu.be/')){const vid=url.split('youtu.be/')[1].split('?')[0];return `https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1&playsinline=1`;}
+ if(url.includes('/preview')) return url.includes('?')? url : url + '?rm=minimal';
  const m1=url.match(/\/d\/([a-zA-Z0-9_-]+)/); const m2=url.match(/id=([a-zA-Z0-9_-]+)/); let id=''; if(m1)id=m1[1]; else if(m2)id=m2[1];
- if(id) return `https://drive.google.com/file/d/${id}/preview`; return url;
+ if(id) return `https://drive.google.com/file/d/${id}/preview?rm=minimal`; return url;
 }
-window.addEventListener('load',()=>{
- const saved=JSON.parse(localStorage.getItem('user')||'{}'); userStatus=saved.status||'Trial';
- document.getElementById('videoModal').addEventListener('contextmenu',e=>e.preventDefault());
+
+window.addEventListener('load',async()=>{
+  cachedUser=JSON.parse(localStorage.getItem('user')||'null');
+  userStatus=cachedUser? (cachedUser.status||'Not Paid') : 'Not Paid';
+  document.getElementById('videoModal').addEventListener('contextmenu',e=>e.preventDefault());
+  document.getElementById('videoWrapper').addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('dragstart',e=>{
+    if(document.getElementById('videoModal').classList.contains('show')) e.preventDefault();
+  });
+  if(cachedUser){
+    document.getElementById('payName').value=cachedUser.name||'';
+    document.getElementById('payPhone').value=cachedUser.phone||'';
+    document.getElementById('payClass').value=cachedUser.class||'';
+  }
+  try{
+    if(cachedUser){
+      const users=await apiGet('Users');
+      const su=users.find(u=>String(u.Phone)===String(cachedUser.phone));
+      if(su){ userStatus=su.Status; cachedUser.status=su.Status; cachedUser.expiry=su.Expiry; localStorage.setItem('user',JSON.stringify(cachedUser)); }
+    }
+  }catch{}
 })
+
 function showAlert(t,m,i='✅'){document.getElementById('alertIcon').innerText=i;document.getElementById('alertTitle').innerText=t;document.getElementById('alertMessage').innerText=m;document.getElementById('alertModal').style.display='flex';document.body.classList.add('no-scroll');}
 function closeAlert(){document.getElementById('alertModal').style.display='none';document.body.classList.remove('no-scroll');}
 function showPaywall(){document.getElementById('paywallModal').style.display='flex';document.body.classList.add('no-scroll');}
 function closePaywall(){document.getElementById('paywallModal').style.display='none';document.body.classList.remove('no-scroll');}
 function selectLevel(level,e){selectedLevel=level;document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');loadVideos();}
-async function apiGet(sheet){const r=await fetch(`${API_URL}?sheet=${sheet}&action=get`);return r.json();}
-async function apiPost(data){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(data)});return r.json();}
+async function apiGet(s){
+  const url = `${API_URL}?sheet=${s}&action=get&t=${Date.now()}`;
+  const r = await fetch(url, {redirect:'follow'});
+  const txt = await r.text();
+  try{ return JSON.parse(txt); }catch(e){ console.error(txt.substring(0,300)); showAlert("❌ Deploy Error","Redeploy App Script as Anyone"); return []; }
+}
+async function apiPost(d){
+  const r = await fetch(API_URL, {method:'POST', redirect:'follow', body:JSON.stringify(d), headers:{'Content-Type':'text/plain;charset=utf-8'}});
+  const txt = await r.text();
+  try{ return JSON.parse(txt); }catch(e){ console.error(txt.substring(0,300)); showAlert("❌ Error","Server returned HTML - Redeploy as Anyone"); return {status:"error"}; }
+}
+
 async function loadVideos(){
  const subject=document.getElementById('subjectSelect').value;
  if(!selectedLevel||!subject){document.getElementById('videoList').innerHTML="<p style='text-align:center;color:var(--muted);padding:30px 0'>Pick Level and Subject above</p>";return;}
  document.getElementById('videoTitleHeader').innerText=`${selectedLevel} - ${subject}`;
  document.getElementById('videoList').innerHTML="<p style='text-align:center;color:var(--muted);padding:30px 0'>Loading videos...</p>";
- try{const res=await apiGet('Videos');allVideos=res.filter(v=>String(v.Class).trim()===String(selectedLevel).trim() && String(v.Subject).trim()===String(subject).trim());renderVideos();}catch{showAlert("Network Error","Failed to load videos","❌")}
+ try{
+   const res=await apiGet('Videos');
+   allVideos=res.filter(v=>String(v.Class).trim()===String(selectedLevel).trim() && String(v.Subject).trim()===String(subject).trim());
+   renderVideos();
+ }catch{showAlert("Network Error","Failed to load videos - MTN slow","❌")}
 }
+
 function renderVideos(){
  const list=document.getElementById('videoList'); list.innerHTML='';
  if(allVideos.length===0){list.innerHTML="<p style='text-align:center;color:var(--muted);padding:30px 0'>No videos found</p>";return;}
  allVideos.forEach(video=>{
    const link=convertDriveLink(video.Link||'');
    const div=document.createElement('div'); div.className='video-item';
-   const dateText=video.Timestamp? new Date(video.Timestamp).toLocaleDateString() : '';
-   div.innerHTML=`<div><div>${video.Title}</div><div class="date">${video.Subject} • ${dateText}</div></div><span>▶️</span>`;
-   div.onclick=()=>{if(userStatus!=='Active'){showPaywall();} else {playVideo(video.Title,link);}};
+   const dateText=video.Date? new Date(video.Date).toLocaleDateString() : (video.Timestamp? new Date(video.Timestamp).toLocaleDateString() : '');
+   div.innerHTML=`<div><div>${video.Title}</div><div class="date" style="font-size:.75rem;color:var(--muted);margin-top:3px">${video.Subject} • ${dateText}</div></div><span>▶️</span>`;
+   div.onclick=async()=>{
+     if(userStatus!=='Active'){
+       try{
+         const users=await apiGet('Users');
+         const su=users.find(u=>String(u.Phone)===String(cachedUser?.phone||''));
+         if(su && su.Status==='Active'){
+           const exp=new Date(su.Expiry); const now=new Date(); now.setHours(0,0,0,0);
+           if(exp>=now){ userStatus='Active'; playVideo(video.Title,link); return; }
+         }
+       }catch{}
+       showPaywall();
+     } else {playVideo(video.Title,link);}
+   };
    list.appendChild(div);
  });
 }
-function playVideo(title,link){document.getElementById('modalVideoPlayer').src=link;document.getElementById('videoTitle').textContent=title;document.getElementById('videoModal').classList.add('show');document.body.classList.add('no-scroll');showUI();}
-function closeVideo(){document.getElementById('modalVideoPlayer').src="";document.getElementById('videoModal').classList.remove('show');document.body.classList.remove('no-scroll');}
+
+function playVideo(title,link){
+  document.getElementById('modalVideoPlayer').src=link;
+  document.getElementById('videoTitle').textContent=title;
+  document.getElementById('videoModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+  showUI();
+  document.addEventListener('contextmenu', blockContext);
+}
+function closeVideo(){
+  document.getElementById('modalVideoPlayer').src="";
+  document.getElementById('videoModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  document.removeEventListener('contextmenu', blockContext);
+}
+function blockContext(e){ e.preventDefault(); return false; }
 function toggleUI(){const m=document.getElementById('videoModal');m.classList.toggle('hide-ui');if(!m.classList.contains('hide-ui'))showUI();}
-function showUI(){const m=document.getElementById('videoModal');m.classList.remove('hide-ui');clearTimeout(hideUITimeout);hideUITimeout=setTimeout(()=>m.classList.add('hide-ui'),3000);}
+function showUI(){const m=document.getElementById('videoModal');m.classList.remove('hide-ui');clearTimeout(hideUITimeout);hideUITimeout=setTimeout(()=>m.classList.add('hide-ui'),4000);}
 function goToPage(p){location.href=p;}
+
 async function submitPayment(){
  const name=document.getElementById('payName').value.trim(); const phone=document.getElementById('payPhone').value.trim();
  const cls=document.getElementById('payClass').value; const txid=document.getElementById('payTxID').value.trim(); const amount=document.getElementById('payAmount').value;
- const deviceID=localStorage.getItem('deviceID')||'device_'+Date.now(); const today=new Date().toISOString().split('T')[0];
+ const deviceID=cachedUser?.deviceID || localStorage.getItem('deviceID') || phone; const today=new Date().toISOString().split('T')[0];
  if(!name||!phone||!cls||!txid||!amount) return showAlert("⚠️ Missing","Fill all fields","⚠️");
  if(parseInt(amount)<500) return showAlert("⚠️ Error","Min 500 FCFA","⚠️");
- showAlert("⏳ Submitting...","Please wait","⏳");
- const res=await apiPost({sheet:'Users',action:'submitPayment',Name:name,Phone:phone,Class:cls,DeviceID:deviceID,TxID:txid,PaidDate:today,Amount:amount,Expiry:""});
- if(res.status==='success'){showAlert("✅ Submitted","Wait for admin approval","📱");closePaywall();} else showAlert("❌ Failed",res.message||"Failed","❌");
+ showAlert("⏳ Submitting...","Please wait - MTN slow","⏳");
+ try{
+   const res=await apiPost({action:'submitPayment',Name:name,Phone:phone,Class:cls,DeviceID:deviceID,TxID:txid,PaidDate:today,Amount:amount});
+   closePaywall();
+   if(res.status==='success'){showAlert("✅ Submitted","Wait for admin approval - check dashboard","📱"); if(cachedUser){cachedUser.status='Pending'; localStorage.setItem('user',JSON.stringify(cachedUser)); userStatus='Pending';}}
+   else showAlert("❌ Failed",res.message||"Failed","❌");
+ }catch{closePaywall();showAlert("❌ Network","MTN slow - if you paid, admin will see T×ID","❌");}
 }
+
 const searchInput=document.getElementById('searchInput'); const suggestionsBox=document.getElementById('suggestionsBox');
 searchInput.addEventListener('input',e=>{
  const q=e.target.value.toLowerCase(); suggestionsBox.innerHTML='';
@@ -161,7 +244,12 @@ searchInput.addEventListener('input',e=>{
  let results=allVideos.filter(v=>v.Title.toLowerCase().includes(q));
  if(results.length>0){suggestionsBox.style.display='block';
    results.slice(0,8).forEach(item=>{const div=document.createElement('div');div.className='suggestion-item';div.innerHTML=`<span>${item.Title}</span> <span class="type">VIDEO</span>`;
-     div.onclick=()=>{searchInput.value='';suggestionsBox.style.display='none';if(userStatus!=='Active'){showPaywall();}else{playVideo(item.Title,convertDriveLink(item.Link));}};
+     div.onclick=async()=>{searchInput.value='';suggestionsBox.style.display='none';
+       if(userStatus!=='Active'){
+         try{ const users=await apiGet('Users'); const su=users.find(u=>String(u.Phone)===String(cachedUser?.phone||'')); if(su && su.Status==='Active'){playVideo(item.Title,convertDriveLink(item.Link)); return;}}catch{}
+         showPaywall();
+       }else{playVideo(item.Title,convertDriveLink(item.Link));}
+     };
      suggestionsBox.appendChild(div);});
  } else suggestionsBox.style.display='none';
 });
